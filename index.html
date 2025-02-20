@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maggi Order - Order Now</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #ffcc00;
+            color: #d32f2f;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid #d32f2f;
+        }
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 2px solid #d32f2f;
+            font-size: 16px;
+        }
+        input {
+            background: #fff8e1;
+            color: #d32f2f;
+        }
+        button {
+            background: #d32f2f;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #b71c1c;
+        }
+        img {
+            width: 120px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 2px solid #d32f2f;
+        }
+        h2 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        p {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .message {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: green;
+            display: none;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="https://i.ibb.co/ZRGxgxbp/maggi.jpg" alt="Indian Maggi Plate">
+        <h2>Order Your Maggi</h2>
+        <p>Price: ₹50 per Plate</p>
+        
+        <form onsubmit="sendToTelegram(event)">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="text" id="contact" placeholder="Your Contact Number" required>
+            <input type="text" id="room" placeholder="Room Number" required>
+            <input type="text" id="hostel" placeholder="Block/Hostel Name" required>
+            <input type="number" id="quantity" placeholder="Quantity (Plates)" min="1" required>
+            <button type="submit" id="orderBtn">Place Order</button>
+        </form>
+        <p class="message" id="successMessage">✅ Order placed successfully!</p>
+        <p class="error" id="errorMessage">❌ Failed to send order. Check bot settings.</p>
+    </div>
+
+    <script>
+        function sendToTelegram(event) {
+            event.preventDefault(); // Prevent page reload
+
+            var botToken = "7598862788:AAGb90Lzi3NscuGQlSMPUAJzcUJL4mrul-M"; // Your bot token
+            var chatId = "-1002483062051"; // New Telegram Supergroup Chat ID
+            
+            var name = document.getElementById("name").value.trim();
+            var contact = document.getElementById("contact").value.trim();
+            var room = document.getElementById("room").value.trim();
+            var hostel = document.getElementById("hostel").value.trim();
+            var quantity = document.getElementById("quantity").value.trim();
+
+            if (!name || !contact || !room || !hostel || !quantity) {
+                alert("Please fill all fields!");
+                return;
+            }
+
+            var message = `🍜 *New Maggi Order!* %0A
+            👤 *Name:* ${name} %0A
+            📞 *Contact:* ${contact} %0A
+            🏠 *Room:* ${room} %0A
+            🏢 *Hostel:* ${hostel} %0A
+            🍽 *Quantity:* ${quantity} Plates %0A
+            ✅ *Order Confirmed!*`;
+
+            var telegramAPI = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${message}&parse_mode=Markdown`;
+
+            // Disable button to prevent multiple clicks
+            var orderBtn = document.getElementById("orderBtn");
+            orderBtn.disabled = true;
+            orderBtn.innerText = "Placing Order...";
+
+            fetch(telegramAPI)
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Telegram Response:", data); // Debugging: Check API response
+                    if (data.ok) {
+                        document.getElementById("successMessage").style.display = "block";
+                        document.getElementById("errorMessage").style.display = "none";
+                        setTimeout(() => {
+                            document.getElementById("successMessage").style.display = "none";
+                        }, 5000);
+                    } else {
+                        document.getElementById("errorMessage").innerText = "❌ " + data.description;
+                        document.getElementById("errorMessage").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    document.getElementById("errorMessage").innerText = "❌ Error sending message. Check internet.";
+                    document.getElementById("errorMessage").style.display = "block";
+                })
+                .finally(() => {
+                    orderBtn.disabled = false;
+                    orderBtn.innerText = "Place Order";
+                });
+        }
+    </script>
+
+</body>
+</html>
